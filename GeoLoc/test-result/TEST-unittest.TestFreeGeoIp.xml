@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<testsuite failures="0" time="0.542" errors="0" skipped="0" tests="2" name="unittest.TestFreeGeoIp">
+  <testcase classname="unittest.TestFreeGeoIp" name="testIpPersonnel" time="0.404">
+      </testcase>
+  <testcase classname="unittest.TestFreeGeoIp" name="testNominal" time="0.138">
+      </testcase>
+</testsuite>

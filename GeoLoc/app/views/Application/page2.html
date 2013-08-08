@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=7, IE=9, IE=10">
+<!--The viewport meta tag is used to improve the presentation and behavior of the samples 
+      on iOS devices-->
+<meta name="viewport"
+	content="initial-scale=1, maximum-scale=1,user-scalable=no">
+<title>Find Address</title>
+
+<link rel="stylesheet"
+	href="http://serverapi.arcgisonline.com/jsapi/arcgis/3.5/js/dojo/dijit/themes/claro/claro.css">
+<link rel="stylesheet"
+	href="http://serverapi.arcgisonline.com/jsapi/arcgis/3.5/js/esri/css/esri.css">
+<style>
+html,body {
+	height: 100%;
+	width: 100%;
+	margin: 0;
+	padding: 0;
+}
+
+#map {
+	padding: 0;
+	border: solid 1px #343642;
+	margin: 5px 5px 5px 0px;
+}
+
+.roundedCorners {
+	-webkit-border-radius: 4px;
+	-moz-border-radius: 4px;
+	border-radius: 4px;
+}
+
+.shadow {
+	box-shadow: 4px 4px 8px #adadad;
+	-webkit-box-shadow: 4px 4px 8px #adadad;
+	-moz-box-shadow: 4px 4px 8px #adadad;
+	-o-box-shadow: 4px 4px 8px #adadad;
+}
+
+#leftPane {
+	width: 20%;
+	border-top: solid 1px #343642;
+	border-left: solid 1px #343642;
+	border-bottom: solid 1px #343642;
+	background-color: #DCDAC5;
+	margin: 5px 0px 5px 5px;
+	color: #343642;
+	font: 100% Georgia, "Times New Roman", Times, serif;
+	letter-spacing: 0.05em;
+}
+</style>
+
+<script>
+	var dojoConfig = {
+		parseOnLoad : true
+	};
+</script>
+<script src="http://serverapi.arcgisonline.com/jsapi/arcgis/3.5/"></script>
+<script>
+	dojo.require("esri.map");
+	dojo.require("esri.tasks.locator");
+	dojo.require("dojo.number");
+	dojo.require("dijit.form.Button");
+	dojo.require("dijit.form.Textarea");
+	dojo.require("dijit.layout.BorderContainer");
+	dojo.require("dijit.layout.ContentPane");
+	dojo.require("dojo/json");
+
+	var map, locator;
+
+	function init() {
+		map = new esri.Map("map", {
+			basemap : "streets",
+			center : [ -93.5, 41.431 ],
+			zoom : 5
+		});
+
+		locator = new esri.tasks.Locator(
+				"http://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer");
+		dojo.connect(locator, "onAddressToLocationsComplete", showResults);
+
+		map.infoWindow.resize(200, 125);
+	}
+
+
+	function getAdress() {
+		require([ "dojo/request" ], function(request) {
+			request(
+					"http://localhost:9000/findAdress/"
+							+ dojo.byId("ip_search").value).then(
+					function(json) {
+						var result = JSON.parse(json, true);
+						var address_local = result.results[0].formatted_address;
+								
+						var txtArea = dijit.byId("address");
+						txtArea.set("value", address_local);
+ 						txtArea.set("text", address_local);
+ 					}, function(error) {
+						console.log("An error occurred: " + error);
+					});
+		});
+	}
+
+	function locate() {
+		getAdress();
+		map.graphics.clear();
+		var address = {
+			"SingleLine" : dojo.byId("address").value
+		};
+
+
+		locator.outSpatialReference = map.spatialReference;
+		var options = {
+			address : address,
+			outFields : [ "Loc_name" ]
+		}
+		locator.addressToLocations(options);
+	}
+
+	function showResults(candidates) {
+		var candidate;
+		var symbol = new esri.symbol.SimpleMarkerSymbol();
+		var infoTemplate = new esri.InfoTemplate("Location",
+				"Address: ${address}<br />Score: ${score}<br />Source locator: ${locatorName}");
+
+		symbol.setStyle(esri.symbol.SimpleMarkerSymbol.STYLE_SQUARE);
+		symbol.setColor(new dojo.Color([ 153, 0, 51, 0.75 ]));
+
+		var geom;
+
+		dojo.every(candidates, function(candidate) {
+			console.log(candidate.score);
+			if (candidate.score > 80) {
+				console.log(candidate.location);
+				var attributes = {
+					address : candidate.address,
+					score : candidate.score,
+					locatorName : candidate.attributes.Loc_name
+				};
+				geom = candidate.location;
+				var graphic = new esri.Graphic(geom, symbol, attributes,
+						infoTemplate);
+				//add a graphic to the map at the geocoded location
+				map.graphics.add(graphic);
+				//add a text symbol to the map listing the location of the matched address.
+				var displayText = candidate.address;
+				var font = new esri.symbol.Font("16pt",
+						esri.symbol.Font.STYLE_NORMAL,
+						esri.symbol.Font.VARIANT_NORMAL,
+						esri.symbol.Font.WEIGHT_BOLD, "Helvetica");
+
+				var textSymbol = new esri.symbol.TextSymbol(displayText, font,
+						new dojo.Color("#666633"));
+				textSymbol.setOffset(0, 8);
+				map.graphics.add(new esri.Graphic(geom, textSymbol));
+				return false; //break out of loop after one candidate with score greater  than 80 is found.
+			}
+		});
+		if (geom !== undefined) {
+			map.centerAndZoom(geom, 12);
+		}
+
+	}
+	dojo.ready(init);
+</script>
+</head>
+<body class="claro">
+	<div id="mainWindow" data-dojo-type="dijit.layout.BorderContainer"
+		data-dojo-props="design:'sidebar', gutters:false"
+		style="width: 100%; height: 100%;">
+
+		<div id="leftPane" class="roundedCorners"
+			data-dojo-type="dijit.layout.ContentPane"
+			data-dojo-props="region:'left'">
+			Enter an input address and the application will use the sample
+			address locator to return the location for street addresses in the
+			United States. <br /> <input type="text" id="ip_search"
+				value="78.225.149.183" />
+			 <textarea dojoType="dijit.form.Textarea" id="address" /></textArea>
+			
+			<br />
+			<button data-dojo-type="dijit.form.Button" onclick="locate()">
+				Locate</button>
+		<!--  		<button data-dojo-type="dijit.form.Button" onclick="getAdress()">
+				getAdress</button> -->
+		</div>
+		<div id="map" class="roundedCorners shadow"
+			data-dojo-type="dijit.layout.ContentPane"
+			data-dojo-props="region:'center'"></div>
+	</div>
+</body>
+</html>

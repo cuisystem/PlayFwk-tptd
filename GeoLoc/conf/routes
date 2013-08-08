@@ -1,0 +1,20 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+# Home page
+GET     /                                       Application.index
+GET		/page2									Application.page2
+GET     /localisation.json/{format},{ip}        Application.localisation
+GET		/findAdress/{ip}						Application.findAdress
+# GET	/localisation/{format},{ip}
+# Ignore favicon requests
+GET     /favicon.ico                            404
+
+# Map static resources from the /app/public folder to the /public path
+GET     /public/                                staticDir:public
+
+# Catch all
+*       /{controller}/{action}                  {controller}.{action}
+
+	

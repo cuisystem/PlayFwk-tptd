@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<testsuite failures="0" time="0.77" errors="0" skipped="0" tests="3" name="functionaltest.FunctionalTestFreeGeoIp">
+  <testcase classname="functionaltest.FunctionalTestFreeGeoIp" name="testLocalisationIpPersonnel" time="0.194">
+      </testcase>
+  <testcase classname="functionaltest.FunctionalTestFreeGeoIp" name="testLocalisationNominal" time="0.142">
+      </testcase>
+  <testcase classname="functionaltest.FunctionalTestFreeGeoIp" name="testFindAdressIpNominal" time="0.434">
+      </testcase>
+</testsuite>
