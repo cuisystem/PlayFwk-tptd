@@ -1,0 +1,24 @@
+<project>
+	<!-- TODO: condition la propriete si windows ou linux -->
+	<!-- <property name="browser" location="C:/Program Files/Internet Explorer/iexplore.exe"/> -->
+	<property name="browser" location="/usr/bin/chromium"/>
+	
+	<target name="main">
+		<echo message="lancement des tests" />
+		
+		<exec executable="play" >
+			<arg value="test" />
+		</exec>
+		
+		
+		<property name="file" location="ant/docs/manual/index.html"/>
+
+		<exec executable="${browser}" spawn="true">
+			<arg value="http://localhost:9000/@tests?select=BasicTest.class,unittest.TestFreeGeoIp.class,functionaltest.FunctionalTestFreeGeoIp.class,ApplicationTest.class,Application.test.html" />
+		</exec>
+		
+		
+		<echo message="please ..." />
+	</target>
+	
+</project>
