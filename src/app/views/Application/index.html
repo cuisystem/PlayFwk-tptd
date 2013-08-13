@@ -18,7 +18,7 @@
 $("#btn_search").click(function(){
 //  alert('ip a rechercher : '+ $("#ip_searched").val());
   
-  $.getJSON( "http://localhost:9000/localisation.json/json," + $("#ip_searched").val())
+  $.getJSON( "localisation.json/json," + $("#ip_searched").val())
   .done(function( json ) {
     $("#div_latlong").text("coordonnées de l'ip " + $("#ip_searched").val() +" :  latitude : " + json.latitude + " ; longitude : " + json.longitude);
   

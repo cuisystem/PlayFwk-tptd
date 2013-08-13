@@ -89,7 +89,7 @@ html,body {
 	function getAdress() {
 		require([ "dojo/request" ], function(request) {
 			request(
-					"http://localhost:9000/findAdress/"
+					"findAdress/"
 							+ dojo.byId("ip_search").value).then(
 					function(json) {
 						var result = JSON.parse(json, true);
